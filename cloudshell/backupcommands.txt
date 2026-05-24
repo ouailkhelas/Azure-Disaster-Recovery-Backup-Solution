@@ -1,0 +1,213 @@
+# Azure Backup Management Commands
+# Run these commands in Azure Cloud Shell to manage backups
+
+## Configuration Variables (Update these)
+RESOURCE_GROUP="rg-dr-solution"
+VAULT_NAME="recovery-vault-xxxxx"  # From deployment output
+VM_NAME="dr-vm-primary-xxxxx"      # From deployment output
+CONTAINER_NAME="iaasvmcontainer;iaasvmcontainerv2;${RESOURCE_GROUP};${VM_NAME}"
+PROTECTED_ITEM_NAME="vm;iaasvmcontainerv2;${RESOURCE_GROUP};${VM_NAME}"
+
+# ==========================================
+# BACKUP JOB MANAGEMENT
+# ==========================================
+
+## View all backup jobs
+az backup job list \
+  --resource-group "$RESOURCE_GROUP" \
+  --vault-name "$VAULT_NAME" \
+  --output table
+
+## View backup jobs status (Running, Completed, Failed)
+az backup job list \
+  --resource-group "$RESOURCE_GROUP" \
+  --vault-name "$VAULT_NAME" \
+  --status Running \
+  --output table
+
+## View completed backup jobs
+az backup job list \
+  --resource-group "$RESOURCE_GROUP" \
+  --vault-name "$VAULT_NAME" \
+  --status Completed \
+  --output table
+
+## Get details of specific backup job
+JOB_ID="xxxxx"  # Replace with actual job ID
+az backup job show \
+  --resource-group "$RESOURCE_GROUP" \
+  --vault-name "$VAULT_NAME" \
+  --name "$JOB_ID"
+
+# ==========================================
+# BACKUP POINT MANAGEMENT
+# ==========================================
+
+## List all recovery points for a VM
+az backup recoverypoint list \
+  --resource-group "$RESOURCE_GROUP" \
+  --vault-name "$VAULT_NAME" \
+  --container-name "$CONTAINER_NAME" \
+  --item-name "$PROTECTED_ITEM_NAME" \
+  --output table
+
+## Get details of a specific recovery point
+RECOVERY_POINT_NAME="xxxxx"  # From recovery point list
+az backup recoverypoint show \
+  --resource-group "$RESOURCE_GROUP" \
+  --vault-name "$VAULT_NAME" \
+  --container-name "$CONTAINER_NAME" \
+  --item-name "$PROTECTED_ITEM_NAME" \
+  --name "$RECOVERY_POINT_NAME"
+
+# ==========================================
+# BACKUP TRIGGERS & RESTORATION
+# ==========================================
+
+## Trigger an immediate backup
+az backup protection backup-now \
+  --resource-group "$RESOURCE_GROUP" \
+  --vault-name "$VAULT_NAME" \
+  --container-name "$CONTAINER_NAME" \
+  --item-name "$PROTECTED_ITEM_NAME" \
+  --retain-until "$(date -d '+30 days' '+%d-%m-%Y')"
+
+## Restore VM from backup point
+# First, get recovery point name from the list above
+RECOVERY_POINT="xxxxx"
+az backup restore restore-azure-vm \
+  --resource-group "$RESOURCE_GROUP" \
+  --vault-name "$VAULT_NAME" \
+  --container-name "$CONTAINER_NAME" \
+  --item-name "$PROTECTED_ITEM_NAME" \
+  --recovery-point "$RECOVERY_POINT"
+
+# ==========================================
+# BACKUP POLICY MANAGEMENT
+# ==========================================
+
+## List all backup policies
+az backup policy list \
+  --resource-group "$RESOURCE_GROUP" \
+  --vault-name "$VAULT_NAME" \
+  --backup-management-type AzureIaasVM \
+  --output table
+
+## Get backup policy details
+az backup policy show \
+  --resource-group "$RESOURCE_GROUP" \
+  --vault-name "$VAULT_NAME" \
+  --name "daily-backup-policy"
+
+## Modify backup policy (example: change retention)
+# Note: This requires modifying policy in Portal or using advanced PowerShell
+
+# ==========================================
+# PROTECTION STATUS & MONITORING
+# ==========================================
+
+## Get protection status for a VM
+az backup container show \
+  --resource-group "$RESOURCE_GROUP" \
+  --vault-name "$VAULT_NAME" \
+  --name "$CONTAINER_NAME" \
+  --backup-management-type AzureIaasVM
+
+## Get protected item details
+az backup item list \
+  --resource-group "$RESOURCE_GROUP" \
+  --vault-name "$VAULT_NAME" \
+  --container-name "$CONTAINER_NAME" \
+  --output table
+
+## Show backup statistics
+az backup vault backup-properties show \
+  --resource-group "$RESOURCE_GROUP" \
+  --name "$VAULT_NAME"
+
+# ==========================================
+# BACKUP DISABLE & CLEANUP
+# ==========================================
+
+## Disable backup protection (stops new backups but keeps data)
+az backup protection disable \
+  --resource-group "$RESOURCE_GROUP" \
+  --vault-name "$VAULT_NAME" \
+  --container-name "$CONTAINER_NAME" \
+  --item-name "$PROTECTED_ITEM_NAME" \
+  --delete-backup-data false
+
+## Delete backup data completely
+az backup protection delete \
+  --resource-group "$RESOURCE_GROUP" \
+  --vault-name "$VAULT_NAME" \
+  --container-name "$CONTAINER_NAME" \
+  --item-name "$PROTECTED_ITEM_NAME"
+
+# ==========================================
+# RECOVERY SERVICES VAULT OPERATIONS
+# ==========================================
+
+## Get vault details
+az backup vault show \
+  --resource-group "$RESOURCE_GROUP" \
+  --name "$VAULT_NAME"
+
+## List vaults in resource group
+az backup vault list \
+  --resource-group "$RESOURCE_GROUP" \
+  --output table
+
+## Show vault backup properties
+az backup vault backup-properties show \
+  --resource-group "$RESOURCE_GROUP" \
+  --name "$VAULT_NAME"
+
+# ==========================================
+# USEFUL QUERIES & COMBINATIONS
+# ==========================================
+
+## Get latest backup job status
+az backup job list \
+  --resource-group "$RESOURCE_GROUP" \
+  --vault-name "$VAULT_NAME" \
+  --output table | head -5
+
+## Check if backup is in progress
+az backup job list \
+  --resource-group "$RESOURCE_GROUP" \
+  --vault-name "$VAULT_NAME" \
+  --status InProgress \
+  --output table
+
+## List latest recovery points (10 most recent)
+az backup recoverypoint list \
+  --resource-group "$RESOURCE_GROUP" \
+  --vault-name "$VAULT_NAME" \
+  --container-name "$CONTAINER_NAME" \
+  --item-name "$PROTECTED_ITEM_NAME" \
+  --output table | head -11
+
+## Export backup items to CSV
+az backup item list \
+  --resource-group "$RESOURCE_GROUP" \
+  --vault-name "$VAULT_NAME" \
+  --output json > backup_inventory.json
+
+# ==========================================
+# SITE RECOVERY COMMANDS (Related)
+# ==========================================
+
+## List replication policies
+az site-recovery policy list \
+  --resource-group "$RESOURCE_GROUP"
+
+## Create replication policy
+az site-recovery policy create \
+  --name "dr-policy" \
+  --resource-group "$RESOURCE_GROUP" \
+  --recovery-point-retention 24 \
+  --application-consistent-snapshot-frequency 4
+
+## Enable replication for VM
+# Note: This requires more complex setup - see portal guide

@@ -1,0 +1,47 @@
+# Bicep and Terraform files
+*.tfstate
+*.tfstate.*
+*.tfvars
+!terraform.tfvars
+.terraform/
+.terraform.lock.hcl
+crash.log
+crash.*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Environment & Secrets
+.env
+.env.local
+*.pem
+*.key
+*.pfx
+*.p12
+
+# Build artifacts
+obj/
+bin/
+dist/
+
+# OS
+.DS_Store
+Thumbs.db
+*.tmp
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv
+env/
+
+# Logs
+*.log
+logs/
