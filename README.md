@@ -11,10 +11,6 @@ A comprehensive infrastructure-as-code project for implementing disaster recover
 │                          │
 │  ┌────────────────────┐  │
 │  │   Production VM    │  │
-│  │                    │  │
-│  │  • Applications    │  │
-│  │  • Databases       │  │
-│  │  • Services        │  │
 │  └────────┬───────────┘  │
 └───────────┼───────────────┘
             │
@@ -34,10 +30,6 @@ RECOVERY VAULT    REPLICA VM (Secondary)
     │        │                          │
     │        │  ┌────────────────────┐  │
     │        │  │   Standby VM       │  │
-    │        │  │                    │  │
-    │        │  │  • Synchronized    │  │
-    │        │  │  • Ready to activate   │
-    │        │  │  • In recovery vault   │
     │        │  └────────────────────┘  │
     │        └──────────────────────────┘
     │                │
@@ -68,24 +60,7 @@ RECOVERY VAULT    REPLICA VM (Secondary)
 6. Traffic redirects to recovery region
 
 **Recovery Flow:**
-1. Detect outage/failure in primary region
-2. Initiate failover (planned or unplanned)
-3. Replica VM starts in secondary region
-4. Applications launch and connect to users
-5. RTO: 10-15 minutes, RPO: 5-15 minutes
-6. When primary recovers, failback to original region
-
-## Key Concepts
-
-| Component | Role | Purpose |
-|-----------|------|---------|
-| **Azure Backup** | Point-in-time snapshots | Protect against data loss, ransomware |
-| **Azure Site Recovery** | Continuous replication | Failover to secondary region |
-| **Recovery Services Vault** | Centralized management | Store backup/replication config |
-| **Recovery Point** | Point-in-time copy | Restore state from specific time |
-| **Replica VM** | Secondary copy | Standby VM in recovery region |
-| **RTO** | Recovery Time Objective | Time to restore (goal: 10-15 min) |
-| **RPO** | Recovery Point Objective | Data loss acceptable (goal: 5-15 min) |
+ RTO: 10-15 minutes, RPO: 5-15 minutes
 
 
 ## Quick Start (4 Steps)
@@ -138,14 +113,14 @@ bash cloudshell/failovertest.sh
 
 ## Technologies Used
 
-| Technology | Purpose | Version |
-|-----------|---------|---------|
-| **Bicep** | Infrastructure as Code | Latest |
-| **Azure CLI** | Deployment & management | 2.40+ |
-| **Azure Backup** | Snapshots & point-in-time recovery | Current |
-| **Azure Site Recovery** | Continuous replication & failover | Current |
-| **Recovery Services Vault** | Centralized management | Current |
-| **Azure Key Vault** | Encryption key management | Current |
+| Technology | Purpose |
+|-----------|---------|
+| **Bicep** | Infrastructure as Code |
+| **Azure CLI** | Deployment & management |
+| **Azure Backup** | Snapshots & point-in-time recovery |
+| **Azure Site Recovery** | Continuous replication & failover |
+| **Recovery Services Vault** | Centralized management |
+| **Azure Key Vault** | Encryption key management |
 
 
 ### Recovery Scenarios
