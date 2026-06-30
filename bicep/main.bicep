@@ -11,7 +11,6 @@ param recoveryVaultName string = 'recovery-vault'
 param backupPolicyName string = 'daily-backup-policy'
 param secondaryLocation string = 'westus'
 
-// Variables
 var uniqueSuffix = uniqueString(resourceGroup().id)
 var vnetAddressPrefix = '10.0.0.0/16'
 var subnetAddressPrefix = '10.0.1.0/24'
@@ -45,7 +44,6 @@ resource vnet 'Microsoft.Network/virtualNetworks@2021-02-01' = {
   }
 }
 
-// Network Security Group
 resource nsg 'Microsoft.Network/networkSecurityGroups@2021-02-01' = {
   name: '${nsgName}-${uniqueSuffix}'
   location: location
@@ -98,7 +96,6 @@ resource nsg 'Microsoft.Network/networkSecurityGroups@2021-02-01' = {
   }
 }
 
-// Public IP
 resource pip 'Microsoft.Network/publicIPAddresses@2021-02-01' = {
   name: '${pipName}-${uniqueSuffix}'
   location: location
@@ -111,7 +108,6 @@ resource pip 'Microsoft.Network/publicIPAddresses@2021-02-01' = {
   }
 }
 
-// Network Interface
 resource nic 'Microsoft.Network/networkInterfaces@2021-02-01' = {
   name: '${nicName}-${uniqueSuffix}'
   location: location
@@ -140,7 +136,6 @@ resource nic 'Microsoft.Network/networkInterfaces@2021-02-01' = {
   }
 }
 
-// Virtual Machine
 resource vm 'Microsoft.Compute/virtualMachines@2021-03-01' = {
   name: '${vmName}-${uniqueSuffix}'
   location: location
@@ -182,7 +177,6 @@ resource vm 'Microsoft.Compute/virtualMachines@2021-03-01' = {
   }
 }
 
-// Recovery Services Vault
 resource vault 'Microsoft.RecoveryServices/vaults@2021-07-01' = {
   name: '${recoveryVaultName}-${uniqueSuffix}'
   location: location
@@ -199,7 +193,6 @@ resource vault 'Microsoft.RecoveryServices/vaults@2021-07-01' = {
   }
 }
 
-// Backup Policy
 resource backupPolicy 'Microsoft.RecoveryServices/vaults/backupPolicies@2021-07-01' = {
   parent: vault
   name: backupPolicyName
@@ -281,7 +274,6 @@ resource backupPolicy 'Microsoft.RecoveryServices/vaults/backupPolicies@2021-07-
   }
 }
 
-// Backup Item (Protected Item)
 resource backupItem 'Microsoft.RecoveryServices/vaults/backupFabrics/protectionContainers/protectedItems@2021-07-01' = {
   name: '${vault.name}/Azure/IaasVMContainer;iaasvmcontainerv2;${resourceGroup().name};${vm.name}/vm;iaasvmcontainerv2;${resourceGroup().name};${vm.name}'
   properties: {
@@ -291,7 +283,6 @@ resource backupItem 'Microsoft.RecoveryServices/vaults/backupFabrics/protectionC
   }
 }
 
-// Key Vault for storing encryption keys (optional but recommended)
 resource keyVault 'Microsoft.KeyVault/vaults@2021-06-01-preview' = {
   name: 'kv${uniqueSuffix}'
   location: location
@@ -322,7 +313,6 @@ resource keyVault 'Microsoft.KeyVault/vaults@2021-06-01-preview' = {
   }
 }
 
-// Outputs
 output vmId string = vm.id
 output vmName string = vm.name
 output publicIpAddress string = pip.properties.ipAddress
