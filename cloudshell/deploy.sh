@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Azure Disaster Recovery & Backup Solution
-# Deployment Script for Azure Cloud Shell
-
 set -e
 
 echo "=========================================="
@@ -11,13 +8,6 @@ echo "Deployment Script"
 echo "=========================================="
 echo ""
 
-# Color codes for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
-
-# Configuration
 RESOURCE_GROUP="rg-dr-solution"
 LOCATION="eastus"
 DEPLOYMENT_NAME="dr-deployment-$(date +%s)"
@@ -56,7 +46,7 @@ PUBLIC_IP=$(echo $DEPLOYMENT_OUTPUT | jq -r '.properties.outputs.publicIpAddress
 VAULT_NAME=$(echo $DEPLOYMENT_OUTPUT | jq -r '.properties.outputs.vaultName.value')
 VAULT_ID=$(echo $DEPLOYMENT_OUTPUT | jq -r '.properties.outputs.vaultId.value')
 
-echo "📊 Deployment Summary:"
+echo "Deployment Summary:"
 echo "├── Resource Group: $RESOURCE_GROUP"
 echo "├── VM Name: $VM_NAME"
 echo "├── VM ID: $VM_ID"
@@ -73,7 +63,6 @@ echo -e "${YELLOW}Step 5: Enabling Backup${NC}"
 CONTAINER_NAME="iaasvmcontainer;iaasvmcontainerv2;${RESOURCE_GROUP};${VM_NAME}"
 PROTECTED_ITEM_NAME="vm;iaasvmcontainerv2;${RESOURCE_GROUP};${VM_NAME}"
 
-# Enable protection for the VM
 az backup protection enable-for-vm \
   --resource-group "$RESOURCE_GROUP" \
   --vault-name "$VAULT_NAME" \
@@ -96,9 +85,9 @@ echo -e "${GREEN}=========================================="
 echo "Next Steps:"
 echo "==========================================${NC}"
 echo ""
-echo "1. ✅ Infrastructure deployed"
-echo "2. ✅ Backup enabled"
-echo "3. ⏳ Wait 5-10 minutes for initial backup"
+echo "1.  Infrastructure deployed"
+echo "2.  Backup enabled"
+echo "3.  Wait 5-10 minutes for initial backup"
 echo ""
 echo "🔧 Configuration Steps:"
 echo "├── View backup jobs: See cloudshell/backupcommands.txt"
@@ -106,11 +95,11 @@ echo "├── Configure Site Recovery: Follow portal/siterecoveryconfig.md"
 echo "├── Test failover: Run cloudshell/failovertest.sh"
 echo "└── Monitor backups: View in Azure Portal"
 echo ""
-echo "🖥️  Connect to VM:"
+echo " Connect to VM:"
 echo "   RDP to: $PUBLIC_IP"
 echo "   SSH to: ${PUBLIC_IP} (if Linux VM)"
 echo ""
-echo "📋 Save these values:"
+echo " Save these values:"
 echo "   Resource Group: $RESOURCE_GROUP"
 echo "   Vault Name: $VAULT_NAME"
 echo "   VM Name: $VM_NAME"
